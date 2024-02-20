@@ -40,7 +40,7 @@ from scipy.stats.mstats import normaltest
 from scipy import stats 
 
 
-df = pd.read_csv(r'/Users/anuheaparker/Desktop/machine_learning/ml/loan_data.csv')
+df = pd.read_csv(r'/Users/anuheaparker/Desktop/ml/loan_data.csv')
 #print(df)
 
 #see first five of the df
@@ -285,3 +285,4 @@ y_pred_voting = voting_classifier.predict(X_test)
 accuracy_voting = accuracy_score(y_test, y_pred_voting)
 print("Voting Classifier Accuracy:", accuracy_voting)
 
+#i want to see if this uploads properly
