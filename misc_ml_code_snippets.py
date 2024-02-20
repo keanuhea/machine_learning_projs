@@ -42,57 +42,154 @@ from scipy import stats
 
 df = pd.read_csv(r'/Users/anuheaparker/Desktop/ml/loan_data.csv')
 
-#see df info
-print(df.head(5))
 
-#don't need the unique loan ID in this dataset 
-df = df.drop(['Loan_ID'], axis=1)
 
-#look at more info
+
+
+
+
+
+
+#see first five of the df
+#print(df.head(5))
+
+#see info in the df 
 print(df.info())
-print(df.dtypes.value_counts())
+#print(df.dtypes.value_counts())
 
-#check for missing data and duplicates 
-print(df.isnull().sum()) 
-#gender, self_employed, loan_amount_term, credit_history have missing data
+#see more information of attribute
+#print(df['Loan_Status'].describe())
+#print(df["LoanAmount"].value_counts())
+
+#CHECK FOR MISSING DATA AND DUPLICATES
+#print(df.isnull().sum()) #gender, self_employed, loan_amount_term, credit_history have missing data
+df = df.dropna(axis=0)
 #print(sum(df.duplicated(subset = "Loan_ID")) == 0) #no duplicates in this dataset
+#print(df.index.is_unique)
 
-#originally just tried deleting the rows with missing data, but realized that would drop too much
-#replace missing data values with mode 
+#GRAPH OF COUNT OF A FEATURE 
+#fig, ax = plt.subplots(figsize = (15,5))
+#plt1 = sns.countplot(x=df['Gender'], order=pd.value_counts(df['Gender']).index)
+#plt1.set(xlabel = 'Gender', ylabel='Count of Gender')
+#plt.show()
+#plt.tight_layout()
 
-df["Gender"] = df["Gender"].fillna(df["Gender"].mode().iloc[0])
-df["Self_Employed"] = df["Self_Employed"].fillna(df["Self_Employed"].mode().iloc[0])
-df["Loan_Amount_Term"] = df["Loan_Amount_Term"].fillna(df["Loan_Amount_Term"].mode().iloc[0])
-df["Credit_History"] = df["Credit_History"].fillna(df["Credit_History"].mode().iloc[0])
+#SCATTERPLOT OF RELATIONSHIP WITH ALL FEATURES
+#sns.pairplot(df)
+#plt.show()
 
-#dependents need to be changed to a numeric value
-df["Dependents"] = df["Dependents"].replace(['0', '1', '2', '3+'], [0,1,2,3])
-df["Dependents"] = df["Dependents"].fillna(df["Dependents"].mode().iloc[0])
+#SKEW VARIABLES
 
-df["CoapplicantIncome"] = df["CoapplicantIncome"].astype(int)
-df["LoanAmount"] = df["LoanAmount"].astype(int)
+# Create a list of float colums to check for skewing
+mask = df.dtypes == float
+float_cols = df.columns[mask]
 
-print(df.isnull().sum())
+skew_limit = 0.75 # define a limit above which we will log transform
+skew_vals = df[float_cols].skew()
 
-#one hot encoding
-df = pd.get_dummies(data=df, columns = ["Gender", "Married", "Education", "Self_Employed", "Property_Area"])
+# Showing the skewed columns
+skew_cols = (skew_vals
+            .sort_values(ascending=False)
+            .to_frame()
+            .rename(columns={0:'Skew'})
+            .query('abs(Skew) > {}'.format(skew_limit)))
+
+#print("these are the skew cols", skew_cols) - I'm not transforming this because it sucks and nothing is working for the left skewed ones 
+
+
+data_copy = df
+
+#CHANGE ID TO NUMBER (if need to use this for later analysis)
+df["Loan_ID"] = df["Loan_ID"].str.replace('LP','')
+df["Loan_ID"] = df["Loan_ID"].astype(int)
+
+df = df.drop("Loan_ID", axis=1)
+
+#ONE HOT ENCODING 
+df = pd.get_dummies(data=df, columns = ["Gender", "Married", "Dependents", "Education", "Self_Employed", "Property_Area"])
 print(df.head(5))
 
 df['Loan_Status_Encoded'], class_names = pd.factorize(df['Loan_Status'])
 
 df.drop(columns=['Loan_Status'], inplace=True)
 
+print(df.head(5))
+
+#see how many unique values each variable has 
+#df_uniques = pd.DataFrame([[i, len(df[i].unique())] for i in df.columns], columns=['Variable', 'Unique Values']).set_index('Variable')
+#print(df_uniques)
+
+#separate out binary variables 
+#binary_variables = list(df_uniques[df_uniques['Unique Values'] == 2].index)
+#print(binary_variables)
+
+#categorical variables
+#categorical_variables = list(df_uniques[(4582 >= df_uniques['Unique Values']) & (df_uniques['Unique Values'] > 2)].index)
+#print(categorical_variables)
+
+#[[i, list(df[i].unique())] for i in categorical_variables]
+
+#if there are ordinal variables, pull them out 
+
+#LINEAR ASSUMPTION TESTING 
+#fig, (ax1, ax2) = plt.subplots(figsize = (12,8), ncols=2,sharey=False)
+#sns.scatterplot( x = df.LoanAmount, y = df.Loan_Status_Encoded,  ax=ax1)
+#sns.regplot(x=df.LoanAmount, y=df.Loan_Status_Encoded, ax=ax1)
+#plt.show()
+
+#sns.scatterplot(x = df.Education,y = df.Loan_Status, ax=ax2)
+#sns.regplot(x=df.Education, y=df.Loan_Status, ax=ax2);
+#plt.show()
 
 
-numerical_columns = ['ApplicantIncome', 'CoapplicantIncome', 'LoanAmount']
+#CHECK IF TARGET IS NORMALLY DISTRIBUTED 
+def plotting_3_chart(data, feature):
+    ## Importing seaborn, matplotlab and scipy modules. 
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+    import matplotlib.gridspec as gridspec
+    from scipy import stats
+    import matplotlib.style as style
+    style.use('fivethirtyeight')
 
-fig,axes = plt.subplots(1,3,figsize=(17,5))
-for idx,cat_col in enumerate(numerical_columns):
-    sns.boxplot(y=cat_col,data=df,x='Loan_Status_Encoded',ax=axes[idx])
+    ## Creating a customized chart. and giving in figsize and everything. 
+    fig = plt.figure(constrained_layout=True, figsize=(12,8))
+    ## creating a grid of 3 cols and 3 rows. 
+    grid = gridspec.GridSpec(ncols=3, nrows=3, figure=fig)
+    #gs = fig3.add_gridspec(3, 3)
 
-print(df[numerical_columns].describe())
-plt.subplots_adjust(hspace=1)
-plt.show()
+    ## Customizing the histogram grid. 
+    ax1 = fig.add_subplot(grid[0, :2])
+    ## Set the title. 
+    ax1.set_title('Histogram')
+    ## plot the histogram. 
+    sns.distplot(data.loc[:,feature], norm_hist=True, ax = ax1)
+
+    # customizing the QQ_plot. 
+    ax2 = fig.add_subplot(grid[1, :2])
+    ## Set the title. 
+    ax2.set_title('QQ_plot')
+    ## Plotting the QQ_Plot. 
+    stats.probplot(data.loc[:,feature], plot = ax2)
+
+    ## Customizing the Box Plot. 
+    ax3 = fig.add_subplot(grid[:, 2])
+    ## Set title. 
+    ax3.set_title('Box Plot')
+    ## Plotting the box plot. 
+    sns.boxplot(data.loc[:,feature], orient='v', ax = ax3);
+    
+    plt.show()
+    
+#plotting_3_chart(df, 'Loan_Status_Encoded')
+
+#previous_data = df.copy()
+
+#LOG TRANSFORMATION & PLOTTING
+#df["Loan_Status_Encoded"] = np.log(df["Loan_Status_Encoded"])
+#plotting_3_chart(df, "Loan_Status_Encoded")
+
+#print(normaltest(df.Loan_Status_Encoded.values))
 
 
 
@@ -108,11 +205,17 @@ y = df["Loan_Status_Encoded"]
 corr_matrix = X.corr()
 print(corr_matrix)
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3, random_state=42)
+
+
+
 
 scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)
-X_test = scaler.fit_transform(X_test)
+X_scaled = scaler.fit_transform(X)
+
+pca=PCA(n_components=2)
+X_pca = pca.fit_transform(X_scaled)
+
+X_train, X_test, y_train, y_test = train_test_split(X_pca, y, test_size = 0.3, random_state=42)
 
 # Fit Logistic Regression model without regularization
 log_reg = LogisticRegression(penalty='none', solver='saga', random_state=42)
@@ -188,13 +291,5 @@ voting_classifier.fit(X_train, y_train)
 y_pred_voting = voting_classifier.predict(X_test)
 accuracy_voting = accuracy_score(y_test, y_pred_voting)
 print("Voting Classifier Accuracy:", accuracy_voting)
-
-#decision tree classifier 
-dtree = DecisionTreeClassifier(max_depth=3, min_samples_leaf= 35)
-dtree.fit(X_train, y_train)
-y_pred_dtree = dtree.predict(X_test)
-accuracy_dtree = accuracy_score(y_test, y_pred_dtree)
-roc_score_dtree = roc_auc_score(y_test, y_pred_dtree)
-print("Dtree accuracy: ", accuracy_dtree)
 
 #i want to see if this uploads properly
