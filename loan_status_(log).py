@@ -2,27 +2,20 @@
 #dataset comes from https://www.kaggle.com/datasets/bhavikjikadara/loan-status-prediction
 
 import tqdm as tqdm
-
 import pandas as pd 
+from pandas.plotting import table
 import numpy as np 
-
-from itertools import accumulate
-
 import matplotlib.pylab as plt 
+import matplotlib.pyplot as plot
 import seaborn as sns
 
 from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-from sklearn.linear_model import LinearRegression
 from sklearn.datasets import load_digits, load_wine
 from sklearn.metrics import r2_score
-from sklearn.metrics import mean_squared_error
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, roc_curve
-from sklearn.pipeline import Pipeline
-from sklearn.compose import ColumnTransformer
 from sklearn.decomposition import PCA
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
@@ -30,7 +23,6 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import VotingClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.neighbors import KNeighborsClassifier
-
 import xgboost as xgb
 
 from scipy.stats import norm
@@ -40,7 +32,11 @@ from scipy.stats.mstats import normaltest
 from scipy import stats 
 
 
+
+
 df = pd.read_csv(r'/Users/anuheaparker/Desktop/ml/loan_data.csv')
+
+pd.set_option("display.max.columns", None)
 
 #see df info
 print(df.head(5))
@@ -74,6 +70,22 @@ df["LoanAmount"] = df["LoanAmount"].astype(int)
 
 print(df.isnull().sum())
 
+
+
+def make_bar_chart(feature):
+    plt.figure(figsize=(10,6))
+    plt.subplot(2,2,1)
+    sns.countplot(x=df[feature], palette="flare")
+    plt.subplot(2,2,1)
+    plt.show()
+
+make_bar_chart("Gender")
+make_bar_chart("Dependents")
+make_bar_chart("Self_Employed")
+
+
+
+
 #one hot encoding
 df = pd.get_dummies(data=df, columns = ["Gender", "Married", "Education", "Self_Employed", "Property_Area"])
 print(df.head(5))
@@ -88,18 +100,26 @@ numerical_columns = ['ApplicantIncome', 'CoapplicantIncome', 'LoanAmount']
 
 fig,axes = plt.subplots(1,3,figsize=(17,5))
 for idx,cat_col in enumerate(numerical_columns):
-    sns.boxplot(y=cat_col,data=df,x='Loan_Status_Encoded',ax=axes[idx])
+    sns.boxplot(y=cat_col,data=df,x='Loan_Status_Encoded',ax=axes[idx], palette="flare")
 
 print(df[numerical_columns].describe())
 plt.subplots_adjust(hspace=1)
 plt.show()
 
+plt.figure(figsize=(6, 6))
+    
+corr = df.select_dtypes(include=np.number).corr()
+mask = np.triu(np.ones_like(corr))
+    
+sns.heatmap(corr, vmin=-1, vmax=1, mask=mask, cmap='flare', annot=True, fmt='.2f', linewidths=0.1, annot_kws={'weight':'bold'})
+    
+plt.title('Correlation Heatmap', fontdict={'fontsize':'x-large', 'fontweight':'bold'})
+plt.show()
 
 
 
 
 #MODEL TESTING
-
 
 X = df.drop("Loan_Status_Encoded", axis=1)
 y = df["Loan_Status_Encoded"]
@@ -110,6 +130,7 @@ print(corr_matrix)
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3, random_state=42)
 
+#scaler
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.fit_transform(X_test)
@@ -196,5 +217,3 @@ y_pred_dtree = dtree.predict(X_test)
 accuracy_dtree = accuracy_score(y_test, y_pred_dtree)
 roc_score_dtree = roc_auc_score(y_test, y_pred_dtree)
 print("Dtree accuracy: ", accuracy_dtree)
-
-#i want to see if this uploads properly
