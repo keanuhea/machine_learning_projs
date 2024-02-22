@@ -77,7 +77,7 @@ def make_bar_chart(feature):
     plt.subplot(2,2,1)
     sns.countplot(x=df[feature], palette="flare")
     plt.subplot(2,2,1)
-    plt.show()
+    #plt.show()
 
 make_bar_chart("Gender")
 make_bar_chart("Dependents")
@@ -104,7 +104,7 @@ for idx,cat_col in enumerate(numerical_columns):
 
 print(df[numerical_columns].describe())
 plt.subplots_adjust(hspace=1)
-plt.show()
+#plt.show()
 
 plt.figure(figsize=(6, 6))
     
@@ -114,7 +114,7 @@ mask = np.triu(np.ones_like(corr))
 sns.heatmap(corr, vmin=-1, vmax=1, mask=mask, cmap='flare', annot=True, fmt='.2f', linewidths=0.1, annot_kws={'weight':'bold'})
     
 plt.title('Correlation Heatmap', fontdict={'fontsize':'x-large', 'fontweight':'bold'})
-plt.show()
+#plt.show()
 
 
 
@@ -187,7 +187,7 @@ accuracy_rf = accuracy_score(y_test, y_pred_rf)
 rf_precision = precision_score(y_test, y_pred_rf)
 rf_f1 = f1_score(y_test, y_pred_rf)
 rf_roc = roc_auc_score(y_test, y_pred_rf)
-metrics.append(['Random Forest', accuracy_rf, rf_precision, rf_f1, rf_roc])
+#metrics.append(['Random Forest', accuracy_rf, rf_precision, rf_f1, rf_roc])
 
 #gradient boosting classifier 
 xgb_classifier = xgb.XGBClassifier()
@@ -197,7 +197,7 @@ accuracy_xgb = accuracy_score(y_test, y_pred_xgb)
 xgb_precision = precision_score(y_test, y_pred_xgb)
 xgb_f1 = f1_score(y_test, y_pred_xgb)
 xgb_roc = roc_auc_score(y_test, y_pred_xgb)
-metrics.append(["Gradient Boosting", accuracy_xgb, xgb_precision, xgb_f1, xgb_roc])
+#metrics.append(["Gradient Boosting", accuracy_xgb, xgb_precision, xgb_f1, xgb_roc])
 
 #svm classifier 
 svm_classifier = SVC(kernel='rbf', random_state=42)
@@ -207,17 +207,17 @@ accuracy_svm = accuracy_score(y_test, y_pred_svm)
 svm_precision = precision_score(y_test, y_pred_svm)
 svm_f1 = f1_score(y_test, y_pred_svm)
 svm_roc = roc_auc_score(y_test, y_pred_svm)
-metrics.append(["SVM", accuracy_svm, svm_precision, svm_f1, svm_roc])
+#metrics.append(["SVM", accuracy_svm, svm_precision, svm_f1, svm_roc])
 
 #neural networks multi-layer perceptron 
-mlp_classifier = MLPClassifier(hidden_layer_sizes=(100, ), max_iter=1000, random_state=42)
-mlp_classifier.fit(X_train, y_train)
-y_pred_mlp = mlp_classifier.predict(X_test)
-accuracy_mlp = accuracy_score(y_test, y_pred_mlp)
-mlp_precision = precision_score(y_test, y_pred_mlp)
-mlp_f1 = f1_score(y_test, y_pred_mlp)
-mlp_roc = roc_auc_score(y_test, y_pred_mlp)
-metrics.append(["Neural Networks Multi-Layer Perceptron", accuracy_mlp, mlp_precision, mlp_f1, mlp_roc])
+#mlp_classifier = MLPClassifier(hidden_layer_sizes=(100, ), max_iter=1000, random_state=42)
+#mlp_classifier.fit(X_train, y_train)
+#y_pred_mlp = mlp_classifier.predict(X_test)
+#accuracy_mlp = accuracy_score(y_test, y_pred_mlp)
+#mlp_precision = precision_score(y_test, y_pred_mlp)
+#mlp_f1 = f1_score(y_test, y_pred_mlp)
+#mlp_roc = roc_auc_score(y_test, y_pred_mlp)
+#metrics.append(["Neural Networks Multi-Layer Perceptron", accuracy_mlp, mlp_precision, mlp_f1, mlp_roc])
 
 #k nearest neighbors 
 knn_classifier = KNeighborsClassifier(n_neighbors=5)
