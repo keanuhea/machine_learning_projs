@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import cv2
 import pandas as pd
+from sklearn.metrics import confusion_matrix
 
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
@@ -35,6 +36,8 @@ from keras.layers import MaxPooling2D
 from keras.layers import Flatten
 from keras.layers import Dense, BatchNormalization
 from keras.preprocessing.image import ImageDataGenerator
+
+from collections import Counter
 
 
 """
@@ -95,7 +98,7 @@ np.save("labels.npy", labels)
 
 
 
-
+#helper function to see the activation layers
 
 def plot_activations_multilayer(num_layers, images_per_row, classifier, activations):
     layer_names = []
@@ -135,7 +138,7 @@ def plot_activations_multilayer(num_layers, images_per_row, classifier, activati
 
 
 
-
+#load in the processed images 
 images = np.load("/Users/anuheaparker/Desktop/ml/deep_learning/images.npy")
 labels = np.load("/Users/anuheaparker/Desktop/ml/deep_learning/labels.npy")
 
@@ -144,10 +147,17 @@ labels = np.load("/Users/anuheaparker/Desktop/ml/deep_learning/labels.npy")
 #plt.axis("off")
 #plt.show()
 
-images, labels = shuffle(images, labels, random_state=101)
+#look at the number of images per tumor category 
+label_counts = Counter(labels)
+for category, count in label_counts.items():
+    print(f"Category {category}: {count} images")
 
+#split the dataset into train and test data 
 images_train, images_test, labels_train, labels_test = train_test_split(images, labels, test_size=0.2, random_state=101)
 
+
+
+#MODEl #1
 
 model = Sequential()
 
@@ -155,13 +165,10 @@ model.add(Conv2D(32, (5,5), padding='same', input_shape=(224,224,3), activation=
 model.add(MaxPooling2D(pool_size=(2,2)))
 model.add(Conv2D(64, (3,3), padding='same', activation='relu'))
 model.add(MaxPooling2D(pool_size=(2,2), strides=(2,2)))
-
-
 model.add(Conv2D(32, (3, 3), padding='same', activation = 'relu'))
 model.add(MaxPooling2D(pool_size=(2, 2), strides=(2,2)))
 model.add(Conv2D(32, (3, 3), padding='same', activation='relu'))
 model.add(MaxPooling2D(pool_size=(2, 2), strides=(2,2)))
-
 model.add(Flatten())
 model.add(Dense(units=512, activation='relu'))
 model.add(Dense(units=5, activation='softmax'))
@@ -169,7 +176,7 @@ model.add(Dense(units=5, activation='softmax'))
 model.build((1,224, 224,3))
 model.summary()
 
-img_tensor = np.array(images_test[0], dtype='int')
+img_tensor = np.array(images_train[20], dtype='int')
 plt.imshow(img_tensor)
 plt.show()
 
@@ -183,15 +190,9 @@ activations = activation_model.predict(img_tensor)
 
 plot_activations_multilayer(8, 8, model, activations)
 
-
-
-
-
 model.compile(optimizer='adam', 
             loss="sparse_categorical_crossentropy", 
             metrics=['accuracy'])
-
-
 
 model.fit(
     images_train, 
@@ -200,69 +201,89 @@ model.fit(
     batch_size=64
 )
 
-for layer in model.layers:
-    if 'conv2d' in layer.name:
-        kernels, biases = layer.get_weights()
-        print(f"layer name: {layer.name}, num of kernels: {kernels.shape[-1]}, kernel shape: {kernels.shape[:2]}, kernel depth: {kernels.shape[2]}")
-
-for layer in model.layers:
-    if 'conv2d' in layer.name:
-        name = layer.name
-
-        kernels, _ = layer.get_weights()
-        k_min, k_max = kernels.min(), kernels.max()
-        kernels = (kernels - k_min) / (k_max - k_min)
-
-        for i in range(4):
-            kernel = kernels[:,:,:,i]
-            fig = plt.figure(figsize=(5, 2))
-            fig.suptitle(f"{name}, kernel {i+1}", fontsize=15)
-
-            for j in range(3):
-                plt.subplot(1, 3, j+1)
-                plt.imshow(kernel[:,:,j], cmap='gray')
-                plt.xticks([])
-                plt.yticks([])
-for layer in model.layers:
-    if 'conv2d' in layer.name:
-        name = layer.name
-
-        kernels, _ = layer.get_weights()
-        k_min, k_max = kernels.min(), kernels.max()
-        kernels = (kernels - k_min) / (k_max - k_min)
-
-        for i in range(4):
-            kernel = kernels[:,:,:,i]
-            fig = plt.figure(figsize=(5, 2))
-            fig.suptitle(f"{name}, kernel {i+1}", fontsize=15)
-
-            for j in range(3):
-                plt.subplot(1, 3, j+1)
-                plt.imshow(kernel[:,:,j], cmap='gray')
-                plt.xticks([])
-                plt.yticks([])
-
-plt.imshow(kernels[:,:,2,3], cmap='gray')
-plt.show()
-
 layer_outputs = [layer.output for layer in model.layers]
 activation_model = Model(inputs=model.input, outputs=layer_outputs)
 
-# let's pick a sample image 
-img_tensor = images_test[1]
-plt.imshow(np.array(img_tensor, dtype='int'))
+loss, accuracy = model.evaluate(images_test, labels_test)
+print(f'Test loss: {loss}, Test accuracy: {accuracy}')
+
+
+
+
+
+
+
+
+
+#CODE FOR A CONFUSION MATRIX - only looking at Model 1 
+
+# Make predictions on test data
+predictions = model.predict(images_test)
+
+# Convert probabilities to class labels
+predicted_labels = np.argmax(predictions, axis=1)
+
+# Calculate confusion matrix
+conf_matrix = confusion_matrix(labels_test, predicted_labels)
+
+# Calculate sensitivity and specificity
+true_positives = np.diag(conf_matrix)
+false_negatives = np.sum(conf_matrix, axis=1) - true_positives
+false_positives = np.sum(conf_matrix, axis=0) - true_positives
+true_negatives = np.sum(conf_matrix) - (true_positives + false_negatives + false_positives)
+
+sensitivity = true_positives / (true_positives + false_negatives)
+specificity = true_negatives / (true_negatives + false_positives)
+
+print("Sensitivity:", sensitivity)
+print("Specificity:", specificity)
+
+
+classes = ["No Tumor", "Meningioma", "Glioma", "Pituitary"]
+
+plt.figure(figsize=(8,6))
+sns.set(font_scale=1.2)
+sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='flare', xticklabels=classes, yticklabels=classes)
+plt.xlabel('Predicted labels')
+plt.ylabel('True labels')
+plt.title('Confusion Matrix')
 plt.show()
 
-img_tensor = np.expand_dims(img_tensor, axis=0)
 
-activations = activation_model.predict(img_tensor)[:6]
 
-plot_activations_multilayer(7,8,model,activations)
 
-label_map = {"no_tumor": 0, "meningioma_tumor": 1, "glioma_tumor": 2, "pituitary_tumor": 3}
-y = model.predict(img_tensor)
-label = label_map[np.argmax(y)]
+"""
+#LIME 
 
-plt.imshow(img_tensor.reshape((224,224,3)).astype("uint8"))
-plt.title(f"Predicted class is: {label}", fontsize=13)
+import lime
+import lime.lime_image
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Initialize LIME explainer
+explainer = lime.lime_image.LimeImageExplainer()
+
+# Choose a sample image for explanation
+sample_index = 0
+sample_image = images_test[sample_index]
+
+# Define the CNN model prediction function
+def cnn_predict(image):
+    # Normalize image to range [0, 1]
+    normalized_image = image / 255.0
+    # Preprocess image (e.g., resizing if needed)
+    preprocessed_image = preprocess_image(normalized_image)
+    # Make predictions using the CNN model
+    predictions = model.predict(np.array([preprocessed_image]))
+    return predictions.flatten()
+
+# Generate explanations using LIME
+explanation = explainer.explain_instance(sample_image, cnn_predict, top_labels=1, hide_color=0, num_samples=1000)
+
+# Show explanation
+temp, mask = explanation.get_image_and_mask(explanation.top_labels[0], positive_only=True, num_features=5, hide_rest=False)
+plt.imshow(mark_boundaries(temp / 2 + 0.5, mask))
 plt.show()
+
+
+"""
