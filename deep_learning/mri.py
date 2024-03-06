@@ -159,53 +159,157 @@ images_train, images_test, labels_train, labels_test = train_test_split(images, 
 
 #MODEl #1
 
-model = Sequential()
+model_1 = Sequential()
 
-model.add(Conv2D(32, (5,5), padding='same', input_shape=(224,224,3), activation='relu'))
-model.add(MaxPooling2D(pool_size=(2,2)))
-model.add(Conv2D(64, (3,3), padding='same', activation='relu'))
-model.add(MaxPooling2D(pool_size=(2,2), strides=(2,2)))
-model.add(Conv2D(32, (3, 3), padding='same', activation = 'relu'))
-model.add(MaxPooling2D(pool_size=(2, 2), strides=(2,2)))
-model.add(Conv2D(32, (3, 3), padding='same', activation='relu'))
-model.add(MaxPooling2D(pool_size=(2, 2), strides=(2,2)))
-model.add(Flatten())
-model.add(Dense(units=512, activation='relu'))
-model.add(Dense(units=5, activation='softmax'))
+model_1.add(Conv2D(32, (5,5), padding='same', input_shape=(224,224,3), activation='relu'))
+model_1.add(MaxPooling2D(pool_size=(2,2)))
+model_1.add(Conv2D(64, (3,3), padding='same', activation='relu'))
+model_1.add(MaxPooling2D(pool_size=(2,2), strides=(2,2)))
+model_1.add(Conv2D(32, (3, 3), padding='same', activation = 'relu'))
+model_1.add(MaxPooling2D(pool_size=(2, 2), strides=(2,2)))
+model_1.add(Conv2D(32, (3, 3), padding='same', activation='relu'))
+model_1.add(MaxPooling2D(pool_size=(2, 2), strides=(2,2)))
+model_1.add(Flatten())
+model_1.add(Dense(units=512, activation='relu'))
+model_1.add(Dense(units=5, activation='softmax'))
 
-model.build((1,224, 224,3))
-model.summary()
+model_1.build((1,224, 224,3))
+model_1.summary()
 
 img_tensor = np.array(images_train[20], dtype='int')
 plt.imshow(img_tensor)
 plt.show()
 
 img_tensor = np.expand_dims(img_tensor, axis=0)
-y = model.predict(img_tensor)
+y = model_1.predict(img_tensor)
 print(f"The predicted output of the sample image has a shape of {y.shape}.")
 
-layer_outputs = [layer.output for layer in model.layers] 
-activation_model = Model(inputs=model.input, outputs=layer_outputs) 
+layer_outputs = [layer.output for layer in model_1.layers] 
+activation_model = Model(inputs=model_1.input, outputs=layer_outputs) 
 activations = activation_model.predict(img_tensor)
 
-plot_activations_multilayer(8, 8, model, activations)
+plot_activations_multilayer(8, 8, model_1, activations)
 
-model.compile(optimizer='adam', 
+model_1.compile(optimizer='adam', 
             loss="sparse_categorical_crossentropy", 
             metrics=['accuracy'])
 
-model.fit(
+model_1.fit(
     images_train, 
     labels_train, 
     epochs=10, 
     batch_size=64
 )
 
-layer_outputs = [layer.output for layer in model.layers]
-activation_model = Model(inputs=model.input, outputs=layer_outputs)
+layer_outputs = [layer.output for layer in model_1.layers]
+activation_model = Model(inputs=model_1.input, outputs=layer_outputs)
 
-loss, accuracy = model.evaluate(images_test, labels_test)
-print(f'Test loss: {loss}, Test accuracy: {accuracy}')
+loss_1, accuracy_1 = model_1.evaluate(images_test, labels_test)
+print(f'Model 1 Test loss: {loss_1}, Model 1 Test accuracy: {accuracy_1}')
+
+
+
+
+
+#MODEl #2
+
+model_2 = Sequential()
+
+model_2.add(Conv2D(64, (3,3), padding='same', input_shape=(224,224,3), activation='relu'))
+model_2.add(MaxPooling2D(pool_size=(2,2)))
+model_2.add(Conv2D(128, (3,3), padding='same', activation='relu'))
+model_2.add(MaxPooling2D(pool_size=(2,2)))
+model_2.add(Conv2D(256, (3,3), padding='same', activation='relu'))
+model_2.add(MaxPooling2D(pool_size=(2,2)))
+model_2.add(Flatten())
+model_2.add(Dense(units=512, activation='relu'))
+model_2.add(Dense(units=5, activation='softmax'))
+
+model_2.build((1,224, 224,3))
+model_2.summary()
+
+img_tensor = np.array(images_train[20], dtype='int')
+plt.imshow(img_tensor)
+plt.show()
+
+img_tensor = np.expand_dims(img_tensor, axis=0)
+y = model_2.predict(img_tensor)
+print(f"The predicted output of the sample image has a shape of {y.shape}.")
+
+layer_outputs = [layer.output for layer in model_2.layers] 
+activation_model = Model(inputs=model_2.input, outputs=layer_outputs) 
+activations = activation_model.predict(img_tensor)
+
+plot_activations_multilayer(8, 8, model_2, activations)
+
+model_2.compile(optimizer='adam', 
+            loss="sparse_categorical_crossentropy", 
+            metrics=['accuracy'])
+
+model_2.fit(
+    images_train, 
+    labels_train, 
+    epochs=10, 
+    batch_size=64
+)
+
+layer_outputs = [layer.output for layer in model_2.layers]
+activation_model = Model(inputs=model_2.input, outputs=layer_outputs)
+
+loss_2, accuracy_2 = model_1.evaluate(images_test, labels_test)
+print(f'Model 2 Test loss: {loss_2}, Model 2 Test accuracy: {accuracy_2}')
+
+
+
+
+
+#MODEl #3
+
+model_3 = Sequential()
+
+model_3.add(Conv2D(32, (5,5), padding='same', input_shape=(224,224,3), activation='relu'))
+model_3.add(MaxPooling2D(pool_size=(2,2)))
+model_3.add(Conv2D(64, (3,3), padding='same', activation='relu'))
+model_3.add(MaxPooling2D(pool_size=(2,2), strides=(2,2)))
+model_3.add(Conv2D(128, (3, 3), padding='same', activation='relu'))
+model_3.add(MaxPooling2D(pool_size=(2, 2), strides=(2,2)))
+model_3.add(Flatten())
+model_3.add(Dense(units=256, activation='relu'))
+model_3.add(Dense(units=5, activation='softmax'))
+
+model_3.build((1,224, 224,3))
+model_3.summary()
+
+img_tensor = np.array(images_train[20], dtype='int')
+plt.imshow(img_tensor)
+plt.show()
+
+img_tensor = np.expand_dims(img_tensor, axis=0)
+y = model_3.predict(img_tensor)
+print(f"The predicted output of the sample image has a shape of {y.shape}.")
+
+layer_outputs = [layer.output for layer in model_3.layers] 
+activation_model = Model(inputs=model_3.input, outputs=layer_outputs) 
+activations = activation_model.predict(img_tensor)
+
+plot_activations_multilayer(8, 8, model_3, activations)
+
+model_3.compile(optimizer='adam', 
+            loss="sparse_categorical_crossentropy", 
+            metrics=['accuracy'])
+
+model_3.fit(
+    images_train, 
+    labels_train, 
+    epochs=10, 
+    batch_size=64
+)
+
+layer_outputs = [layer.output for layer in model_3.layers]
+activation_model = Model(inputs=model_3.input, outputs=layer_outputs)
+
+loss_3, accuracy_3 = model_3.evaluate(images_test, labels_test)
+print(f'Model 3 Test loss: {loss_3}, Model 3 Test accuracy: {accuracy_3}')
 
 
 
@@ -218,7 +322,7 @@ print(f'Test loss: {loss}, Test accuracy: {accuracy}')
 #CODE FOR A CONFUSION MATRIX - only looking at Model 1 
 
 # Make predictions on test data
-predictions = model.predict(images_test)
+predictions = model_1.predict(images_test)
 
 # Convert probabilities to class labels
 predicted_labels = np.argmax(predictions, axis=1)
@@ -252,8 +356,17 @@ plt.show()
 
 
 
+
+
+
+
+
+
+
 """
+
 #LIME 
+#sample code, not fully written yet 
 
 import lime
 import lime.lime_image
@@ -274,7 +387,7 @@ def cnn_predict(image):
     # Preprocess image (e.g., resizing if needed)
     preprocessed_image = preprocess_image(normalized_image)
     # Make predictions using the CNN model
-    predictions = model.predict(np.array([preprocessed_image]))
+    predictions = model_1.predict(np.array([preprocessed_image]))
     return predictions.flatten()
 
 # Generate explanations using LIME
