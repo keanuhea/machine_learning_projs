@@ -155,7 +155,7 @@ for category, count in label_counts.items():
 #split the dataset into train and test data 
 images_train, images_test, labels_train, labels_test = train_test_split(images, labels, test_size=0.2, random_state=101)
 
-
+"""
 
 #MODEl #1
 
@@ -208,21 +208,26 @@ loss_1, accuracy_1 = model_1.evaluate(images_test, labels_test)
 print(f'Model 1 Test loss: {loss_1}, Model 1 Test accuracy: {accuracy_1}')
 
 
+"""
 
 
+
+"""
 
 #MODEl #2
 
 model_2 = Sequential()
 
-model_2.add(Conv2D(64, (3,3), padding='same', input_shape=(224,224,3), activation='relu'))
-model_2.add(MaxPooling2D(pool_size=(2,2)))
-model_2.add(Conv2D(128, (3,3), padding='same', activation='relu'))
-model_2.add(MaxPooling2D(pool_size=(2,2)))
-model_2.add(Conv2D(256, (3,3), padding='same', activation='relu'))
-model_2.add(MaxPooling2D(pool_size=(2,2)))
+model_2.add(Conv2D(16, (3, 3), padding='same', input_shape=(224, 224, 3), activation='relu'))
+model_2.add(MaxPooling2D(pool_size=(2, 2)))
+model_2.add(Conv2D(32, (3, 3), padding='same', activation='relu'))
+model_2.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+model_2.add(Conv2D(16, (3, 3), padding='same', activation='relu'))
+model_2.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+model_2.add(Conv2D(16, (3, 3), padding='same', activation='relu'))
+model_2.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
 model_2.add(Flatten())
-model_2.add(Dense(units=512, activation='relu'))
+model_2.add(Dense(units=256, activation='relu'))
 model_2.add(Dense(units=5, activation='softmax'))
 
 model_2.build((1,224, 224,3))
@@ -256,8 +261,12 @@ model_2.fit(
 layer_outputs = [layer.output for layer in model_2.layers]
 activation_model = Model(inputs=model_2.input, outputs=layer_outputs)
 
-loss_2, accuracy_2 = model_1.evaluate(images_test, labels_test)
+loss_2, accuracy_2 = model_2.evaluate(images_test, labels_test)
 print(f'Model 2 Test loss: {loss_2}, Model 2 Test accuracy: {accuracy_2}')
+
+"""
+
+
 
 
 
@@ -267,14 +276,16 @@ print(f'Model 2 Test loss: {loss_2}, Model 2 Test accuracy: {accuracy_2}')
 
 model_3 = Sequential()
 
-model_3.add(Conv2D(32, (5,5), padding='same', input_shape=(224,224,3), activation='relu'))
-model_3.add(MaxPooling2D(pool_size=(2,2)))
-model_3.add(Conv2D(64, (3,3), padding='same', activation='relu'))
-model_3.add(MaxPooling2D(pool_size=(2,2), strides=(2,2)))
-model_3.add(Conv2D(128, (3, 3), padding='same', activation='relu'))
-model_3.add(MaxPooling2D(pool_size=(2, 2), strides=(2,2)))
+model_3.add(Conv2D(16, (3, 3), padding='same', input_shape=(224, 224, 3), activation='relu'))
+model_3.add(MaxPooling2D(pool_size=(2, 2)))
+model_3.add(Conv2D(32, (3, 3), padding='same', activation='relu'))
+model_3.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+model_3.add(Conv2D(16, (3, 3), padding='same', activation='relu'))
+model_3.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+model_3.add(Conv2D(8, (3, 3), padding='same', activation='relu'))
+model_3.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
 model_3.add(Flatten())
-model_3.add(Dense(units=256, activation='relu'))
+model_3.add(Dense(units=128, activation='relu'))
 model_3.add(Dense(units=5, activation='softmax'))
 
 model_3.build((1,224, 224,3))
@@ -317,7 +328,7 @@ print(f'Model 3 Test loss: {loss_3}, Model 3 Test accuracy: {accuracy_3}')
 
 
 
-
+"""
 
 #CODE FOR A CONFUSION MATRIX - only looking at Model 1 
 
@@ -355,7 +366,7 @@ plt.show()
 
 
 
-
+"""
 
 
 
